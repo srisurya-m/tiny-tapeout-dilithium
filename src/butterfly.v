@@ -1,5 +1,5 @@
 `default_nettype wire
-`timescale 1ns / 1ps
+// REMOVED timescale to prevent PDK conflicts
 
 module butterfly(
     input             clk,
@@ -14,8 +14,8 @@ module butterfly(
     output reg        valido
     );
     
-    localparam
-        DILITHIUM_Q = 23'd8380417;
+    // CHANGED to 24 bits to match register widths
+    localparam DILITHIUM_Q = 24'd8380417;
     
     localparam
         FORWARD_NTT_MODE = 3'd0,
@@ -55,16 +55,17 @@ module butterfly(
     reg [23:0] multa, multb;
     reg [23:0] zeta_delay,zeta_delay2;
     
-    Barrett REDUCER(
-      clk,
-      rst,
-      barrett_readyi,
-      barrett_validi,
-      barrett_datai,
-      barrett_readyo,
-      barrett_valido,
-      barrett_remainder,
-      barrett_quotient
+    // Instantiating the correct module name
+    Barrett_8380417 REDUCER(
+      .clock(clk),
+      .reset(rst),
+      .io_in_ready(barrett_readyi),
+      .io_in_valid(barrett_validi),
+      .io_in_bits(barrett_datai),
+      .io_out_ready(barrett_readyo),
+      .io_out_valid(barrett_valido),
+      .io_out_bits_remainder(barrett_remainder),
+      .io_out_bits_quotient(barrett_quotient)
     );
     
     initial begin
@@ -100,45 +101,41 @@ module butterfly(
             valido = valid_sr[3];
 
         case(modei)
-        FORWARD_NTT_MODE: begin
-            adda = aj3[4];
-            addb = ajlen3;
-            
-            suba = aj3[4];
-            subb = ajlen3;
-
-            multa = ajlen2_FNTT;
-        end
-        INVERSE_NTT_MODE: begin
-            multa = ajlen2_INTT;
-
-            adda = aj1;
-            addb = ajlen1;
-            
-            suba = aj1;
-            subb = ajlen1;
-        end
-        MULT_MODE: begin
-            // MULT-ACC
-            multa = ajlen2_MODM;
-
-            adda = aj4;
-            addb = ajlen3;
-        end
-        ADD_MODE: begin
-            adda = ajlen1;
-            addb = zeta_delay;
-            
-            suba = ajlen4;
-            subb = DILITHIUM_Q;
-        end
-        SUB_MODE: begin
-            adda = ajlen1;
-            addb = DILITHIUM_Q;
-            
-            suba = aj4;
-            subb = ajlen4_sub;
-        end
+            FORWARD_NTT_MODE: begin
+                adda = aj3[4];
+                addb = ajlen3;
+                suba = aj3[4];
+                subb = ajlen3;
+                multa = ajlen2_FNTT;
+            end
+            INVERSE_NTT_MODE: begin
+                multa = ajlen2_INTT;
+                adda = aj1;
+                addb = ajlen1;
+                suba = aj1;
+                subb = ajlen1;
+            end
+            MULT_MODE: begin
+                multa = ajlen2_MODM;
+                adda = aj4;
+                addb = ajlen3;
+            end
+            ADD_MODE: begin
+                adda = ajlen1;
+                addb = zeta_delay;
+                suba = ajlen4;
+                subb = DILITHIUM_Q;
+            end
+            SUB_MODE: begin
+                adda = ajlen1;
+                addb = DILITHIUM_Q;
+                suba = aj4;
+                subb = ajlen4_sub;
+            end
+            default: begin
+                // Default case to satisfy linter
+                adda = 0; addb = 0; suba = 0; subb = 0;
+            end
         endcase
         
         barrett_validi = 1;
@@ -149,8 +146,6 @@ module butterfly(
         subtractor  = (subb > suba) ? sub_tmp - subb : suba - subb;      
     end
     
-
-
     always @(posedge clk) begin
         if (rst) begin
             valid_sr <= 0;
@@ -171,57 +166,56 @@ module butterfly(
         bj    <= (aj5 >= DILITHIUM_Q)    ? aj5    - DILITHIUM_Q : aj5;
         bjlen <= (ajlen5 >= DILITHIUM_Q) ? ajlen5 - DILITHIUM_Q : ajlen5;
 
-        ajlen3 <= barrett_remainder;
+        // Fixed width mismatch (23 bit wire to 24 bit reg)
+        ajlen3 <= {1'b0, barrett_remainder};
 
         ajlen4 <= adder;
         ajlen4_sub <= zeta_delay;
-        case(mode)
-        FORWARD_NTT_MODE: begin
-            aj2    <= aj;
-            ajlen2_INTT <= ajlen;
-
-            ajlen5 <= subtractor;
-            aj5    <= adder;
-            
-        end
-        INVERSE_NTT_MODE: begin
-            aj2    <= adder;
-            ajlen2_INTT <= subtractor;
-            
-            if (aj3[4][0] == 1)
-                aj5 <= (aj3[4] >> 1) + (DILITHIUM_Q + 1) / 2;
-            else
-                aj5 <= (aj3[4] >> 1);
-    
-            if (ajlen3[0] == 1)
-                ajlen5 <= (ajlen3 >> 1) + (DILITHIUM_Q + 1) / 2;
-            else
-                ajlen5 <= (ajlen3 >> 1);        
-        end
-        MULT_MODE: begin
-            aj2    <= aj;
-            aj4    <= aj3[3];
         
-            ajlen2_INTT <= ajlen;
-            ajlen5 <= adder;
-        end
-        ADD_MODE: begin
-            ajlen5 <= (ajlen4 > DILITHIUM_Q) ? subtractor : ajlen4;
-        end
-        SUB_MODE: begin
-            aj4    <= (ajlen1 < zeta_delay) ? adder : ajlen1;
-            ajlen5 <= subtractor;
-        end
+        case(mode)
+            FORWARD_NTT_MODE: begin
+                aj2    <= aj;
+                ajlen2_INTT <= ajlen;
+                ajlen5 <= subtractor;
+                aj5    <= adder;
+            end
+            INVERSE_NTT_MODE: begin
+                aj2    <= adder;
+                ajlen2_INTT <= subtractor;
+                
+                if (aj3[4][0] == 1)
+                    aj5 <= (aj3[4] >> 1) + (DILITHIUM_Q + 1) / 2;
+                else
+                    aj5 <= (aj3[4] >> 1);
+        
+                if (ajlen3[0] == 1)
+                    ajlen5 <= (ajlen3 >> 1) + (DILITHIUM_Q + 1) / 2;
+                else
+                    ajlen5 <= (ajlen3 >> 1);        
+            end
+            MULT_MODE: begin
+                aj2    <= aj;
+                aj4    <= aj3[3];
+                ajlen2_INTT <= ajlen;
+                ajlen5 <= adder;
+            end
+            ADD_MODE: begin
+                ajlen5 <= (ajlen4 > DILITHIUM_Q) ? subtractor : ajlen4;
+            end
+            SUB_MODE: begin
+                aj4    <= (ajlen1 < zeta_delay) ? adder : ajlen1;
+                ajlen5 <= subtractor;
+            end
+            default: begin
+                // Default hold values
+            end
         endcase
     
-        
         aj3[0] <= aj2;
         aj3[1] <= aj3[0];
         aj3[2] <= aj3[1];
         aj3[3] <= aj3[2];
         aj3[4] <= aj3[3];
     end
-    
-    
     
 endmodule
