@@ -1,3 +1,4 @@
+/* verilator lint_off UNUSEDSIGNAL */
 `default_nettype wire
 
 module DecoupledStage(
@@ -261,3 +262,4 @@ module Barrett_8380417(
     _stg2_io_in_bits_quotient_T_4;  
   assign stg2_io_out_ready = io_out_ready;  
 endmodule
+
