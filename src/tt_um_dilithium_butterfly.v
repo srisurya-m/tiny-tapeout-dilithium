@@ -14,6 +14,11 @@ module tt_um_dilithium_butterfly (
     // Reset handling (TinyTapeout uses active low reset)
     wire rst = !rst_n;
 
+    // Silence unused signal warnings
+    wire [7:0] _unused_inputs = {uio_in};
+    wire       _unused_ena = ena;
+    wire [3:0] _unused_ui = ui_in[7:4];
+
     // --- Input Shift Register ---
     // We need approx 76 bits:
     // mode(3) + validi(1) + aj(24) + ajlen(24) + zeta(24) = 76 bits
