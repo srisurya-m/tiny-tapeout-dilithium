@@ -121,7 +121,9 @@ module DecoupledStage_2(
 initial begin
 end  
 endmodule
-module Barrett(
+
+// --- RENAMED MODULE BELOW TO MATCH FILE NAME ---
+module Barrett_8380417(
   input          clock,
   input          reset,
   output         io_in_ready,
