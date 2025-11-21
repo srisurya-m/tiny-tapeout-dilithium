@@ -1,3 +1,4 @@
+/* verilator lint_off UNUSEDSIGNAL */
 `default_nettype wire
 // REMOVED timescale to prevent PDK conflicts
 
@@ -219,3 +220,4 @@ module butterfly(
     end
     
 endmodule
+
