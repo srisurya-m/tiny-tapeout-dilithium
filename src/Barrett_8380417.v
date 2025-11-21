@@ -1,36 +1,14 @@
-/*
- * From our research paper "High-Performance Hardware Implementation of CRYSTALS-Dilithium"
- * by Luke Beckwith, Duc Tri Nguyen, Kris Gaj
- * at George Mason University, USA
- * https://eprint.iacr.org/2021/1451.pdf
- * =============================================================================
- * Copyright (c) 2021 by Cryptographic Engineering Research Group (CERG)
- * ECE Department, George Mason University
- * Fairfax, VA, U.S.A.
- * Author: Luke Beckwith
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *     http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * =============================================================================
- * @author   Luke Beckwith <lbeckwit@gmu.edu>
- */
-
+`default_nettype wire
 
 module DecoupledStage(
-  input         clock,
-  input         reset,
-  output        io_in_ready,
-  input         io_in_valid,
+  input          clock,
+  input          reset,
+  output         io_in_ready,
+  input          io_in_valid,
   input  [23:0] io_in_bits_ul,
   input  [23:0] io_in_bits_quo,
-  input         io_out_ready,
-  output        io_out_valid,
+  input          io_out_ready,
+  output         io_out_valid,
   output [23:0] io_out_bits_ul,
   output [23:0] io_out_bits_quo
 );
@@ -61,15 +39,15 @@ initial begin
 end  
 endmodule
 module DecoupledStage_1(
-  input         clock,
-  input         reset,
-  output        io_in_ready,
-  input         io_in_valid,
+  input          clock,
+  input          reset,
+  output         io_in_ready,
+  input          io_in_valid,
   input  [23:0] io_in_bits_ul,
   input  [23:0] io_in_bits_quo,
   input  [23:0] io_in_bits_quo_times_Q,
-  input         io_out_ready,
-  output        io_out_valid,
+  input          io_out_ready,
+  output         io_out_valid,
   output [23:0] io_out_bits_ul,
   output [23:0] io_out_bits_quo,
   output [23:0] io_out_bits_quo_times_Q
@@ -106,14 +84,14 @@ initial begin
 end  
 endmodule
 module DecoupledStage_2(
-  input         clock,
-  input         reset,
-  output        io_in_ready,
-  input         io_in_valid,
+  input          clock,
+  input          reset,
+  output         io_in_ready,
+  input          io_in_valid,
   input  [22:0] io_in_bits_remainder,
   input  [23:0] io_in_bits_quotient,
-  input         io_out_ready,
-  output        io_out_valid,
+  input          io_out_ready,
+  output         io_out_valid,
   output [22:0] io_out_bits_remainder,
   output [23:0] io_out_bits_quotient
 );
@@ -144,13 +122,13 @@ initial begin
 end  
 endmodule
 module Barrett(
-  input         clock,
-  input         reset,
-  output        io_in_ready,
-  input         io_in_valid,
+  input          clock,
+  input          reset,
+  output         io_in_ready,
+  input          io_in_valid,
   input  [45:0] io_in_bits,
-  input         io_out_ready,
-  output        io_out_valid,
+  input          io_out_ready,
+  output         io_out_valid,
   output [22:0] io_out_bits_remainder,
   output [23:0] io_out_bits_quotient
 );
