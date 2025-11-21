@@ -39,6 +39,7 @@ module DecoupledStage(
 initial begin
 end  
 endmodule
+
 module DecoupledStage_1(
   input          clock,
   input          reset,
@@ -84,6 +85,7 @@ module DecoupledStage_1(
 initial begin
 end  
 endmodule
+
 module DecoupledStage_2(
   input          clock,
   input          reset,
@@ -262,4 +264,3 @@ module Barrett_8380417(
     _stg2_io_in_bits_quotient_T_4;  
   assign stg2_io_out_ready = io_out_ready;  
 endmodule
-
